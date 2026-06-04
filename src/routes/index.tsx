@@ -64,7 +64,7 @@ function Index() {
             aria-label="avatar"
             className="group relative h-32 w-32 overflow-hidden rounded-full border-4 border-primary/30 shadow-lg ring-4 ring-background transition hover:scale-105 sm:h-40 sm:w-40"
           >
-            <img src={yassinAsset.url} alt="Yassin Abdelhady" className="h-full w-full object-cover" />
+            <img src="https://id-preview--b8a1ef0a-f68f-4758-9782-15e9df6b3d66.lovable.app/__l5e/assets-v1/de94e17b-1cb4-45d9-a30b-d44efe13946c/yassin.jpeg" alt="Yassin Abdelhady" className="h-full w-full object-cover" />
           </button>
           <h1 className="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">Yassin Abdelhady</h1>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
