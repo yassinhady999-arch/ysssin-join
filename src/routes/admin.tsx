@@ -9,14 +9,28 @@ export const Route = createFileRoute("/admin")({
 function Admin() {
   const [apps, setApps] = useState<Application[]>([]);
   const [open, setOpen] = useState<Application | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { setApps(getApplications()); }, []);
+  const loadApps = async () => {
+    setLoading(true);
+    const data = await getApplications();
+    setApps(data);
+    setLoading(false);
+  };
 
-  const remove = (id: string) => {
+  useEffect(() => {
+    loadApps();
+  }, []);
+
+  const remove = async (id: string) => {
     if (!confirm("حذف هذا الطلب؟")) return;
-    deleteApplication(id);
-    setApps(getApplications());
-    if (open?.id === id) setOpen(null);
+    try {
+      await deleteApplication(id);
+      await loadApps();
+      if (open?.id === id) setOpen(null);
+    } catch (error) {
+      alert("حدث خطأ أثناء الحذف");
+    }
   };
 
   return (
@@ -29,11 +43,22 @@ function Admin() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <p className="mb-4 text-sm text-muted-foreground">
-          إجمالي الطلبات: <span className="font-semibold text-foreground">{apps.length}</span>
-        </p>
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            إجمالي الطلبات: <span className="font-semibold text-foreground">{apps.length}</span>
+          </p>
+          <button 
+            onClick={loadApps} 
+            className="text-xs bg-muted px-2 py-1 rounded hover:bg-muted/80"
+            disabled={loading}
+          >
+            {loading ? "جاري التحميل..." : "تحديث"}
+          </button>
+        </div>
 
-        {apps.length === 0 ? (
+        {loading ? (
+          <div className="py-20 text-center text-muted-foreground">جاري تحميل الطلبات...</div>
+        ) : apps.length === 0 ? (
           <div className="rounded-xl border bg-card p-12 text-center text-muted-foreground">
             لا توجد طلبات حتى الآن
           </div>
@@ -63,7 +88,7 @@ function Admin() {
                       <td className="px-4 py-3" dir="ltr">{a.whatsapp}</td>
                       <td className="px-4 py-3">{a.percentage}</td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {new Date(a.submittedAt).toLocaleDateString("ar-EG")}
+                        {new Date(a.submitted_at).toLocaleDateString("ar-EG")}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
@@ -99,7 +124,7 @@ function Admin() {
               <Row k="النسبة المطلوبة" v={`${open.percentage}%`} />
               <Row k="الخبرات السابقة" v={open.experience} block />
               <Row k="سبب الانضمام" v={open.why} block />
-              <Row k="تاريخ التقديم" v={new Date(open.submittedAt).toLocaleString("ar-EG")} />
+              <Row k="تاريخ التقديم" v={new Date(open.submitted_at).toLocaleString("ar-EG")} />
             </dl>
             <a
               href={`https://wa.me/${open.whatsapp.replace(/[^0-9]/g, "")}`}

@@ -1,3 +1,5 @@
+import { supabase } from "./supabaseClient";
+
 export type Application = {
   id: string;
   name: string;
@@ -8,31 +10,55 @@ export type Application = {
   why: string;
   percentage: string;
   whatsapp: string;
-  submittedAt: string;
+  submitted_at: string;
 };
 
-const KEY = "yassin_sales_applications_v1";
+export async function getApplications(): Promise<Application[]> {
+  const { data, error } = await supabase
+    .from('applications')
+    .select('*')
+    .order('submitted_at', { ascending: false });
 
-export function getApplications(): Application[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
-  } catch {
+  if (error) {
+    console.error('Error fetching applications:', error);
     return [];
   }
+
+  return data || [];
 }
 
-export function addApplication(app: Omit<Application, "id" | "submittedAt">) {
-  const apps = getApplications();
-  apps.unshift({
-    ...app,
-    id: crypto.randomUUID(),
-    submittedAt: new Date().toISOString(),
-  });
-  localStorage.setItem(KEY, JSON.stringify(apps));
+export async function addApplication(app: Omit<Application, "id" | "submitted_at">) {
+  const { data, error } = await supabase
+    .from('applications')
+    .insert([
+      {
+        name: app.name,
+        age: app.age,
+        country: app.country,
+        governorate: app.governorate,
+        experience: app.experience,
+        why: app.why,
+        percentage: app.percentage,
+        whatsapp: app.whatsapp,
+      }
+    ]);
+
+  if (error) {
+    console.error('Error adding application:', error);
+    throw error;
+  }
+
+  return data;
 }
 
-export function deleteApplication(id: string) {
-  const apps = getApplications().filter((a) => a.id !== id);
-  localStorage.setItem(KEY, JSON.stringify(apps));
+export async function deleteApplication(id: string) {
+  const { error } = await supabase
+    .from('applications')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting application:', error);
+    throw error;
+  }
 }
